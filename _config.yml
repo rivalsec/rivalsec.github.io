@@ -23,6 +23,7 @@ title: Rivalsec blog
 description: >- # this means to ignore newlines until "baseurl:"
   bug bounty tips
 baseurl: "" # the subpath of your site, e.g. /blog
+domain: rivalsec.github.io
 url: "https://rivalsec.github.io/" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: rivalsec
 github_username:  rivalsec
